@@ -17,3 +17,4 @@ MANIFEST
 *.annoy
 *.idx
 *.hdf5
+rsyncproj.sh

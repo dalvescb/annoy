@@ -201,6 +201,16 @@ inline T euclidean_distance(const T* x, const T* y, int f) {
   return d;
 }
 
+inline float fvec_L2sqr_ref(const float* x, const float* y, size_t d) {
+  size_t i;
+  float res = 0;
+  for (i = 0; i < d; i++) {
+    const float tmp = x[i] - y[i];
+    res += tmp * tmp;
+  }
+  return res;
+}
+
 #ifdef ANNOYLIB_USE_AVX
 // Horizontal single sum of 256bit vector.
 inline float hsum256_ps_avx(__m256 v) {
@@ -898,6 +908,38 @@ struct Manhattan : Minkowski {
   }
   static const char* name() {
     return "manhattan";
+  }
+};
+
+struct L2sqr : Minkowski {
+  template<typename S, typename T>
+  static inline T distance(const Node<S, T>* x, const Node<S, T>* y, int f) {
+    // Use the global fvec_L2sqr_ref function for float types
+    return static_cast<T>(fvec_L2sqr_ref(x->v, y->v, f));
+  }
+  template<typename S, typename T, typename Random>
+  static inline void create_split(const vector<Node<S, T>*>& nodes, int f, size_t s, Random& random, Node<S, T>* n) {
+    Node<S, T>* p = (Node<S, T>*)alloca(s);
+    Node<S, T>* q = (Node<S, T>*)alloca(s);
+    two_means<T, Random, L2sqr, Node<S, T> >(nodes, f, random, false, p, q);
+
+    for (int z = 0; z < f; z++)
+      n->v[z] = p->v[z] - q->v[z];
+    Base::normalize<T, Node<S, T> >(n, f);
+    n->a = 0.0;
+    for (int z = 0; z < f; z++)
+      n->a += -n->v[z] * (p->v[z] + q->v[z]) / 2;
+  }
+  template<typename T>
+  static inline T normalized_distance(T distance) {
+    // Return the distance as-is (already squared, no normalization needed)
+    return std::max(distance, T(0));
+  }
+  template<typename S, typename T>
+  static inline void init_node(Node<S, T>* n, int f) {
+  }
+  static const char* name() {
+    return "l2sqr";
   }
 };
 
