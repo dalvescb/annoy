@@ -82,6 +82,7 @@ setup(name='annoy',
               depends=['src/annoylib.h', 'src/kissrandom.h', 'src/mman.h'],
               extra_compile_args=extra_compile_args,
               extra_link_args=extra_link_args,
+              extra_objects=['customlib/custom.o'],
           )
       ],
       long_description=long_description,

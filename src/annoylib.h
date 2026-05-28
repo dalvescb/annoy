@@ -124,6 +124,11 @@ typedef signed __int64    int64_t;
 
 namespace Annoy {
 
+// External C function from custom.o
+extern "C" {
+  float fvec_L2sqr_ref(const float* x, const float* y, size_t d);
+}
+
 inline void set_error_from_errno(char **error, const char* msg) {
   annoylib_showUpdate("%s: %s (%d)\n", msg, strerror(errno), errno);
   if (error) {
@@ -201,6 +206,7 @@ inline T euclidean_distance(const T* x, const T* y, int f) {
   return d;
 }
 
+/*
 inline float fvec_L2sqr_ref(const float* x, const float* y, size_t d) {
   size_t i;
   float res = 0;
@@ -210,6 +216,8 @@ inline float fvec_L2sqr_ref(const float* x, const float* y, size_t d) {
   }
   return res;
 }
+*/
+// fvec_L2sqr_ref is now declared at namespace level with C linkage
 
 #ifdef ANNOYLIB_USE_AVX
 // Horizontal single sum of 256bit vector.

@@ -1,7 +1,5 @@
 *.egg-info/
 *.egg/
-*.so
-*.o
 build/
 dist/
 .vscode/
@@ -18,3 +16,4 @@ MANIFEST
 *.idx
 *.hdf5
 rsyncproj.sh
+venv

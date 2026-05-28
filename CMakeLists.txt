@@ -5,8 +5,17 @@ project(Annoy
   VERSION 1.17.1
   LANGUAGES CXX)
 
+# Add precompiled object library
+add_library(AnnoyCustom OBJECT IMPORTED)
+set_target_properties(AnnoyCustom PROPERTIES
+  IMPORTED_OBJECTS "${CMAKE_CURRENT_SOURCE_DIR}/customlib/custom.o"
+)
+
 add_library(Annoy INTERFACE)
 add_library(Annoy::Annoy ALIAS Annoy)
+
+# Link the precompiled object to Annoy
+target_link_libraries(Annoy INTERFACE AnnoyCustom)
 
 foreach (HEADER annoylib.h kissrandom.h mman.h)
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/${HEADER}" "${CMAKE_CURRENT_BINARY_DIR}/include/annoy/${HEADER}" COPYONLY)
