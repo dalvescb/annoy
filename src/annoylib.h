@@ -861,7 +861,8 @@ struct Minkowski : Base {
 struct Euclidean : Minkowski {
   template<typename S, typename T>
   static inline T distance(const Node<S, T>* x, const Node<S, T>* y, int f) {
-    return euclidean_distance(x->v, y->v, f);    
+    return static_cast<T>(fvec_L2sqr_ref(x->v, y->v, f));
+    // return euclidean_distance(x->v, y->v, f);    
   }
   template<typename S, typename T, typename Random>
   static inline void create_split(const vector<Node<S, T>*>& nodes, int f, size_t s, Random& random, Node<S, T>* n) {
