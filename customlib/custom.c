@@ -44,3 +44,28 @@ float cosine_distance_ref (const float* x, const float* y, size_t d)
     return res;
 }
 
+float angular_distance_c(const float* x, const float* y, int f, float x_norm, float y_norm) {
+    // Always recompute norms and dot product in a single fused loop
+    // Returns: 2 - 2*cos(theta), which is the squared Euclidean distance between unit vectors
+    // This matches the original C++ implementation
+    float pq = 0.0f;  // x·y
+    float pp = 0.0f;  // x·x
+    float qq = 0.0f;  // y·y
+    
+    // Compute all three dot products in one pass
+    for (int i = 0; i < f; i++) {
+        float xi = x[i];
+        float yi = y[i];
+        pq += xi * yi;
+        pp += xi * xi;
+        qq += yi * yi;
+    }
+    
+    // Calculate: 2 - 2*cos(theta) = 2 - 2*(x·y)/(|x||y|)
+    float ppqq = pp * qq;
+    if (ppqq > 0.0f) {
+        return 2.0f - 2.0f * pq / sqrtf(ppqq);
+    } else {
+        return 2.0f; // cos is 0
+    }
+}

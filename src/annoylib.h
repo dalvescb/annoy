@@ -127,6 +127,7 @@ namespace Annoy {
 // External C function from custom.o
 extern "C" {
   float fvec_L2sqr_ref(const float* x, const float* y, size_t d);
+  float angular_distance_c(const float* x, const float* y, int f, float x_norm, float y_norm);
 }
 
 inline void set_error_from_errno(char **error, const char* msg) {
@@ -489,17 +490,21 @@ struct Angular : Base {
     };
     T v[ANNOYLIB_V_ARRAY_SIZE];
   };
+  // template<typename S, typename T>
+  // static inline T distance(const Node<S, T>* x, const Node<S, T>* y, int f) {
+  //   // want to calculate (a/|a| - b/|b|)^2
+  //   // = a^2 / a^2 + b^2 / b^2 - 2ab/|a||b|
+  //   // = 2 - 2cos
+  //   T pp = x->norm ? x->norm : dot(x->v, x->v, f); // For backwards compatibility reasons, we need to fall back and compute the norm here
+  //   T qq = y->norm ? y->norm : dot(y->v, y->v, f);
+  //   T pq = dot(x->v, y->v, f);
+  //   T ppqq = pp * qq;
+  //   if (ppqq > 0) return 2.0 - 2.0 * pq / sqrt(ppqq);
+  //   else return 2.0; // cos is 0
+  // }
   template<typename S, typename T>
   static inline T distance(const Node<S, T>* x, const Node<S, T>* y, int f) {
-    // want to calculate (a/|a| - b/|b|)^2
-    // = a^2 / a^2 + b^2 / b^2 - 2ab/|a||b|
-    // = 2 - 2cos
-    T pp = x->norm ? x->norm : dot(x->v, x->v, f); // For backwards compatibility reasons, we need to fall back and compute the norm here
-    T qq = y->norm ? y->norm : dot(y->v, y->v, f);
-    T pq = dot(x->v, y->v, f);
-    T ppqq = pp * qq;
-    if (ppqq > 0) return 2.0 - 2.0 * pq / sqrt(ppqq);
-    else return 2.0; // cos is 0
+    return static_cast<T>(angular_distance_c(x->v, y->v, f, x->norm, y->norm));
   }
   template<typename S, typename T>
   static inline T margin(const Node<S, T>* n, const T* y, int f) {
